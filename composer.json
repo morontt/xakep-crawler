@@ -1,0 +1,17 @@
+{
+    "name": "morontt/xakep_crawler",
+    "description": "xakep crawler",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "morontt",
+            "email": "morontt@gmail.com",
+            "homepage": "http://morontt.info",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "fabpot/goutte": "~2.0"
+    },
+    "minimum-stability": "stable"
+}
