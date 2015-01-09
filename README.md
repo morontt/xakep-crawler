@@ -8,7 +8,7 @@ xakep-crawler
     composer install
     cp config.php.dist config.php
 
-Устанавливаем нужный путь в конфиге config.php
+Устанавливаем нужный путь в конфиге _config.php_
 
 #### Запуск
 
