@@ -10,6 +10,9 @@
             "role": "Developer"
         }
     ],
+    "autoload": {
+        "psr-0": { "": "src/" }
+    },
     "require": {
         "fabpot/goutte": "~2.0"
     },
