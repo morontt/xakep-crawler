@@ -8,7 +8,12 @@
 
 namespace Mtt;
 
+use Goutte\Client;
 
+/**
+ * Class Crawler
+ * @package Mtt
+ */
 class Crawler
 {
     /**
@@ -27,6 +32,15 @@ class Crawler
 
     public function run()
     {
-        var_dump($this->config);
+        $client = new Client();
+
+        $client->getClient()->setDefaultOption('config/curl/'.CURLOPT_TIMEOUT, 30);
+        $client->setHeader('User-Agent', $this->config['user_agent']);
+
+        $crawler = $client->request('GET', $this->config['url']);
+
+        if($client->getResponse()->getStatus() == 200){
+            //var_dump($crawler->getNode(0));
+        }
     }
 }
