@@ -9,6 +9,7 @@
 namespace Mtt;
 
 use Goutte\Client;
+use Symfony\Component\DomCrawler\Crawler as SymfonyCrawler;
 
 /**
  * Class Crawler
@@ -34,13 +35,15 @@ class Crawler
     {
         $client = new Client();
 
-        $client->getClient()->setDefaultOption('config/curl/'.CURLOPT_TIMEOUT, 30);
+        $client->getClient()->setDefaultOption('config/curl/' . CURLOPT_TIMEOUT, 30);
         $client->setHeader('User-Agent', $this->config['user_agent']);
 
         $crawler = $client->request('GET', $this->config['url']);
 
-        if($client->getResponse()->getStatus() == 200){
-            //var_dump($crawler->getNode(0));
+        if ($client->getResponse()->getStatus() == 200) {
+            $nodeValues = $crawler->filter('a.download-button')->each(function (SymfonyCrawler $node) {
+                return $node->attr('href');
+            });
         }
     }
 }
