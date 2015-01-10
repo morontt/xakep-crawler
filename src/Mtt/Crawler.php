@@ -9,6 +9,7 @@
 namespace Mtt;
 
 use Goutte\Client;
+use GuzzleHttp\Exception\TransferException;
 use Symfony\Component\DomCrawler\Crawler as SymfonyCrawler;
 use Symfony\Component\Process\Process;
 
@@ -42,22 +43,62 @@ class Crawler
         }
     }
 
-    public function run()
+    /**
+     * @param boolean $allPages
+     */
+    public function run($allPages)
     {
         $client = new Client();
 
         $client->getClient()->setDefaultOption('config/curl/' . CURLOPT_TIMEOUT, 30);
         $client->setHeader('User-Agent', $this->config['user_agent']);
 
-        $crawler = $client->request('GET', $this->config['url']);
+        try {
+            $crawler = $client->request('GET', $this->config['url']);
+        } catch (TransferException $e) {
+            echo $e->getMessage() . PHP_EOL;
+            exit(1);
+        }
 
         if ($client->getResponse()->getStatus() == 200) {
-            $nodeValues = $crawler->filter('a.download-button')->each(function (SymfonyCrawler $node) {
-                return $node->attr('href');
-            });
+            $this->getUrlsAndDownload($crawler);
 
-            $this->download($nodeValues);
+            if ($allPages) {
+                $link = $this->getNextLink($crawler);
+
+                while ($link) {
+                    $crawler = $client->click($link);
+                    $this->getUrlsAndDownload($crawler);
+
+                    $link = $this->getNextLink($crawler);
+                };
+            }
+        } else {
+            echo "site not available\n";
         }
+    }
+
+    /**
+     * @param SymfonyCrawler $crawler
+     * @return \Symfony\Component\DomCrawler\Link|null
+     */
+    protected function getNextLink(SymfonyCrawler $crawler)
+    {
+        $linkNode = $crawler->selectLink('След');
+
+        return count($linkNode) ? $linkNode->link() : null;
+    }
+
+    /**
+     * @param SymfonyCrawler $crawler
+     */
+    protected function getUrlsAndDownload(SymfonyCrawler $crawler)
+    {
+        $nodeValues = $crawler->filter('a.download-button')->each(function (SymfonyCrawler $node) {
+            return $node->attr('href');
+        });
+
+        $this->download($nodeValues);
     }
 
     /**
@@ -81,7 +122,15 @@ class Crawler
                 } else {
                     echo sprintf("%s - done\n", $target);
                 }
+
+                $this->randomSleep();
             }
         }
+    }
+
+    protected function randomSleep()
+    {
+        $p = rand(2, 6);
+        sleep($p);
     }
 }
