@@ -30,6 +30,16 @@ class Crawler
     public function __construct(array $config)
     {
         $this->config = $config;
+
+        if (!file_exists($config['downloads_path']) || is_file($config['downloads_path'])) {
+            echo "download directory not exists\n";
+            exit(1);
+        }
+
+        if (!is_writable($config['downloads_path'])) {
+            echo "download directory not writable\n";
+            exit(1);
+        }
     }
 
     public function run()
