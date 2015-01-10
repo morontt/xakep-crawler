@@ -10,6 +10,7 @@ namespace Mtt;
 
 use Goutte\Client;
 use Symfony\Component\DomCrawler\Crawler as SymfonyCrawler;
+use Symfony\Component\Process\Process;
 
 /**
  * Class Crawler
@@ -44,6 +45,33 @@ class Crawler
             $nodeValues = $crawler->filter('a.download-button')->each(function (SymfonyCrawler $node) {
                 return $node->attr('href');
             });
+
+            $this->download($nodeValues);
+        }
+    }
+
+    /**
+     * @param array $urls
+     */
+    protected function download(array $urls)
+    {
+        foreach ($urls as $url) {
+            $parts = explode('/', $url);
+            $filename = preg_replace('/\?.*/', '', $parts[count($parts) - 1]);
+
+            $target = $this->config['downloads_path'] . DIRECTORY_SEPARATOR . $filename;
+
+            if (!file_exists($target)) {
+                $process = new Process(sprintf('wget -O %s %s', $target, $url));
+                $process->run();
+
+                if (!$process->isSuccessful()) {
+                    echo sprintf("%s - error\n", $target);
+                    unlink($target);
+                } else {
+                    echo sprintf("%s - done\n", $target);
+                }
+            }
         }
     }
 }

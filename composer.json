@@ -14,7 +14,8 @@
         "psr-0": { "": "src/" }
     },
     "require": {
-        "fabpot/goutte": "~2.0"
+        "fabpot/goutte": "~2.0",
+        "symfony/process": "~2.1"
     },
     "minimum-stability": "stable"
 }
