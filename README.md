@@ -5,10 +5,9 @@ xakep-crawler
 
 #### Установка
 
-    composer install
-    cp config.php.dist config.php
+    ./install.sh
 
-Устанавливаем нужный путь в конфиге _config.php_
+Устанавливаем нужный путь _downloads_path_ в конфиге _config.php_
 
 #### Запуск
 
