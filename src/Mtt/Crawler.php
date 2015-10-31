@@ -95,7 +95,7 @@ class Crawler
     protected function getUrlsAndDownload(SymfonyCrawler $crawler)
     {
         $nodeValues = $crawler->filter('a.download-button')->each(function (SymfonyCrawler $node) {
-            return $node->attr('href');
+            return $this->config['base_url'] . $node->attr('href');
         });
 
         $this->download($nodeValues);
@@ -110,11 +110,33 @@ class Crawler
             $parts = explode('/', $url);
             $filename = preg_replace('/\?.*/', '', $parts[count($parts) - 1]);
 
-            $target = $this->config['downloads_path'] . DIRECTORY_SEPARATOR . $filename;
+            $process = $this->createProcess(sprintf('wget --spider %s  2>&1 | awk \'/Location/ {print $2}\'', $url));
 
+            if (!$process->isSuccessful()) {
+                continue;
+            } 
+
+            $fileLocation = $process->getOutput();
+            $fileLocationParts = explode("\xA", $fileLocation);
+
+            $process = $this->createProcess(sprintf('wget --spider %s  2>&1 | awk \'/Length/ {print $4}\'', $fileLocationParts[0]));
+
+            if (!$process->isSuccessful()) {
+                continue;
+            } 
+
+            $fileType = $process->getOutput();
+            $fileTypeParts = explode("\xA", $fileType);
+
+            $fileExt = $this->getFileExtension($fileTypeParts[0]);
+
+            if ($fileExt === false) {
+                continue;
+            }
+
+            $target = $this->config['downloads_path'] . DIRECTORY_SEPARATOR . $filename . $fileExt;
             if (!file_exists($target)) {
-                $process = new Process(sprintf('wget -O %s %s', $target, $url));
-                $process->run();
+                $process = $this->createProcess(sprintf('wget -O %s %s', $target, $url));
 
                 if (!$process->isSuccessful()) {
                     echo sprintf("%s - error\n", $target);
@@ -126,6 +148,30 @@ class Crawler
                 $this->randomSleep();
             }
         }
+    }
+
+    protected function createProcess($process)
+    {
+        $process = new Process($process);
+        $process->setTimeout($this->config['fetch_time']);
+        $process->run();
+
+        return $process;
+    }
+
+    protected function getFileExtension($fileType)
+    {
+        switch ($fileType) {
+            case '[application/pdf]':
+                $fileExt = '.pdf';
+                break;
+
+            default:
+                $fileExt = false;
+                break;
+        }
+
+        return $fileExt;
     }
 
     protected function randomSleep()

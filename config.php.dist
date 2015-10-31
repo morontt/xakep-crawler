@@ -4,4 +4,6 @@ return [
     'downloads_path' => '/path/to/downloads',
     'user_agent' => 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:34.0) Gecko/20100101 Firefox/34.0',
     'url' => 'https://xakep.ru/issues',
+    'base_url' => 'https://xakep.ru',
+    'fetch_time' => 600,
 ];
